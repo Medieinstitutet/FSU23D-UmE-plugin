@@ -91,3 +91,42 @@ function mt_create_main_protein_taxonomy() {
 }
 
 add_action( 'init', 'mt_create_main_protein_taxonomy', 0 );
+
+
+add_action('before_create_form', function() {
+    ?>
+        <div>Kom ihåg att välja produkter</div>
+    <?php
+});
+
+/*
+add_action('create_form', function() {
+    ?>
+        <div>Just nu kan vi inte ta emot nya recept</div>
+    <?php
+});
+
+add_action('init', function() {
+    remove_action('create_form', 'mt_create_form');
+});
+*/
+
+function mt_adjust_create_form_html($output) {
+
+    return str_replace('multiple', '', $output);
+}
+
+add_filter('create_form_html', 'mt_adjust_create_form_html', 10, 1);
+
+function mt_adjust_create_form_html_options($output, $products) {
+
+    $new_output = '';
+
+    foreach($products as $key => $name) {
+        $new_output .= '<option value="'.$key.'">'.$name.' ('.$key.')</option>';
+    }
+
+    return $new_output;
+}
+
+add_filter('create_form_html_options', 'mt_adjust_create_form_html_options', 10, 2);
