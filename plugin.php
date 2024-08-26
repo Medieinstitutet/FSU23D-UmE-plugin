@@ -113,6 +113,8 @@ add_action('init', function() {
 
 function mt_adjust_create_form_html($output) {
 
+    return $output;
+
     return str_replace('multiple', '', $output);
 }
 
@@ -130,3 +132,64 @@ function mt_adjust_create_form_html_options($output, $products) {
 }
 
 add_filter('create_form_html_options', 'mt_adjust_create_form_html_options', 10, 2);
+
+function mt_test_shortcode( $atts ){
+	return "foo and bar";
+}
+add_shortcode( 'test', 'mt_test_shortcode' );
+
+
+function mt_create_api_posts_meta_field() {
+ 
+    register_rest_field( 'recept', 'time', array(
+           'get_callback'    => 'mt_get_post_meta_for_api',
+           'schema'          => null,
+        )
+    );
+
+    register_rest_route( 'mt/v1', '/test/(?P<id>[\\d]+)', array(
+        'methods' => 'GET',
+        'callback' => 'mt_get_custom_users_data',
+    ));
+}
+
+add_action( 'rest_api_init', 'mt_create_api_posts_meta_field' );
+
+
+
+ 
+function mt_get_post_meta_for_api( $object ) {
+    $post_id = $object['id'];
+
+    $tidsatgang = get_post_meta($post_id, 'tidsatgang', true);
+
+    //Komplexa databasfrågor
+    $number_of_times = get_post_meta($post_id, 'numberOfTimes', true);
+    if(!$number_of_times) {
+        $number_of_times = 0;
+    }
+    $number_of_times++;
+    update_post_meta($post_id, 'numberOfTimes', $number_of_times);
+
+    return $tidsatgang;
+}
+
+function mt_get_custom_users_data($data) {
+    //var_dump($data);
+
+    $result = 0;
+
+    if(is_user_logged_in()) {
+        $post_id = $data->get_param('id');
+
+    $title = $data->get_param('title');
+
+    $result = wp_update_post(
+        array('ID' => $post_id, 'post_title' => $title)
+    );
+    }
+    
+    return array('id' => $result);
+}
+
+    
